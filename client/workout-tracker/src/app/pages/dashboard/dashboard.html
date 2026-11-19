@@ -1,0 +1,130 @@
+
+<div class="dashboard">
+
+  <header class="dashboard-header">
+    <div>
+      <span class="eyebrow">WORKOUT TRACKER</span>
+      <h1>Dashboard</h1>
+      <p>Обзор твоей спортивной активности</p>
+    </div>
+
+    <button class="refresh-btn" (click)="loadDashboard()">
+      Обновить данные
+    </button>
+  </header>
+
+  @if (loading) {
+    <div class="message">Загрузка статистики...</div>
+  }
+
+  @if (error) {
+    <div class="error-message">
+      {{ error }}
+      <button (click)="loadDashboard()">Повторить</button>
+    </div>
+  }
+
+  @if (!loading && !error) {
+
+    <section class="stats-grid">
+
+      <article class="stat-card">
+        <span class="stat-label">Всего тренировок</span>
+        <strong>{{ totalWorkouts }}</strong>
+        <span class="stat-description">Зарегистрировано занятий</span>
+      </article>
+
+      <article class="stat-card">
+        <span class="stat-label">Потрачено калорий</span>
+        <strong>{{ totalCalories.toLocaleString('ru-RU') }}</strong>
+        <span class="stat-description">Ккал за все тренировки</span>
+      </article>
+
+      <article class="stat-card">
+        <span class="stat-label">Время тренировок</span>
+        <strong>{{ totalHours }} ч</strong>
+        <span class="stat-description">{{ totalMinutes }} минут</span>
+      </article>
+
+      <article class="stat-card">
+        <span class="stat-label">Средний расход</span>
+        <strong>{{ averageCalories }}</strong>
+        <span class="stat-description">Ккал за тренировку</span>
+      </article>
+
+    </section>
+
+    <section class="content-grid">
+
+      <article class="panel sports-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Виды спорта</h2>
+            <p>Распределение тренировок</p>
+          </div>
+        </div>
+
+        @if (sportStats.length > 0) {
+          <div class="sports-list">
+            @for (sport of sportStats; track sport.name) {
+              <div class="sport-item">
+                <div class="sport-info">
+                  <span>{{ sport.name }}</span>
+                  <span>{{ sport.count }} занятий · {{ sport.percentage }}%</span>
+                </div>
+
+                <div class="progress-track">
+                  <div
+                    class="progress-fill"
+                    [style.width.%]="sport.percentage">
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-text">Пока нет данных о тренировках.</p>
+        }
+      </article>
+
+      <article class="panel recent-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Последние тренировки</h2>
+            <p>Твоя недавняя активность</p>
+          </div>
+
+          <a routerLink="/workouts">Все тренировки</a>
+        </div>
+
+        @if (recentWorkouts.length > 0) {
+          <div class="workout-list">
+            @for (workout of recentWorkouts; track workout.id) {
+              <div class="workout-item">
+                <div class="workout-icon">
+                  {{ workout.sportTypeName.substring(0, 1) }}
+                </div>
+
+                <div class="workout-details">
+                  <strong>{{ workout.title }}</strong>
+                  <span>
+                    {{ workout.sportTypeName }} ·
+                    {{ workout.date | date:'dd.MM.yyyy' }}
+                  </span>
+                </div>
+
+                <div class="workout-metrics">
+                  <strong>{{ workout.durationMinutes }} мин</strong>
+                  <span>{{ workout.calories }} ккал</span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-text">Добавь первую тренировку.</p>
+        }
+      </article>
+
+    </section>
+  }
+</div>

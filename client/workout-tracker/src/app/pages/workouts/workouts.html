@@ -1,0 +1,234 @@
+
+<div class="workouts-page">
+
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">WORKOUT TRACKER</span>
+      <h1>Мои тренировки</h1>
+      <p>Управляй своей спортивной активностью</p>
+    </div>
+
+    <button class="primary-btn" (click)="openCreateForm()">
+      + Добавить тренировку
+    </button>
+  </header>
+
+  @if (error) {
+    <div class="alert error-alert">
+      {{ error }}
+      <button (click)="error = ''">×</button>
+    </div>
+  }
+
+  @if (success) {
+    <div class="alert success-alert">
+      {{ success }}
+      <button (click)="success = ''">×</button>
+    </div>
+  }
+
+  @if (showForm) {
+    <section class="form-panel">
+      <div class="panel-heading">
+        <h2>{{ editingId === null ? 'Новая тренировка' : 'Редактирование тренировки' }}</h2>
+        <button class="close-btn" type="button" (click)="cancelForm()">×</button>
+      </div>
+
+      <form (ngSubmit)="saveWorkout()">
+        <div class="form-grid">
+
+          <label>
+            Название тренировки
+            <input
+              type="text"
+              name="title"
+              [(ngModel)]="form.title"
+              placeholder="Например, Boxing Training"
+              required
+              maxlength="100"
+            />
+          </label>
+
+          <label>
+            Вид спорта
+            <select name="sportTypeId" [(ngModel)]="form.sportTypeId">
+              @for (sport of sportTypes; track sport.id) {
+                <option [ngValue]="sport.id">{{ sport.name }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            Дата и время
+            <input
+              type="datetime-local"
+              name="date"
+              [(ngModel)]="form.date"
+              required
+            />
+          </label>
+
+          <label>
+            Продолжительность (мин)
+            <input
+              type="number"
+              name="durationMinutes"
+              [(ngModel)]="form.durationMinutes"
+              min="1"
+              required
+            />
+          </label>
+
+          <label>
+            Потраченные калории
+            <input
+              type="number"
+              name="calories"
+              [(ngModel)]="form.calories"
+              min="0"
+              required
+            />
+          </label>
+
+          <label class="full-width">
+            Заметки
+            <textarea
+              name="notes"
+              [(ngModel)]="form.notes"
+              rows="3"
+              placeholder="Дополнительная информация о тренировке">
+            </textarea>
+          </label>
+
+        </div>
+
+        <div class="form-actions">
+          <button class="secondary-btn" type="button" (click)="cancelForm()">
+            Отмена
+          </button>
+
+          <button class="primary-btn" type="submit" [disabled]="saving">
+            {{ saving ? 'Сохранение...' : (editingId === null ? 'Создать тренировку' : 'Сохранить изменения') }}
+          </button>
+        </div>
+      </form>
+    </section>
+  }
+
+  <section class="list-panel">
+    <div class="list-header">
+      <div>
+        <h2>Все тренировки</h2>
+        <p>Всего записей: {{ total }}</p>
+      </div>
+
+      <button class="secondary-btn" (click)="loadWorkouts()">
+        Обновить
+      </button>
+    </div>
+
+    @if (loading) {
+      <div class="empty-state">Загрузка тренировок...</div>
+    } @else if (workouts.length === 0) {
+      <div class="empty-state">
+        <h3>Тренировок пока нет</h3>
+        <p>Добавь первую тренировку, чтобы начать отслеживать прогресс.</p>
+        <button class="primary-btn" (click)="openCreateForm()">
+          Добавить тренировку
+        </button>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Тренировка</th>
+              <th>Вид спорта</th>
+              <th>Дата</th>
+              <th>Время</th>
+              <th>Калории</th>
+              <th>Фотография</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (workout of workouts; track workout.id) {
+              <tr>
+                <td>
+                  <strong>{{ workout.title }}</strong>
+                  @if (workout.notes) {
+                    <small>{{ workout.notes }}</small>
+                  }
+                </td>
+
+                <td>{{ workout.sportTypeName }}</td>
+
+                <td>{{ workout.date | date:'dd.MM.yyyy HH:mm' }}</td>
+
+                <td>{{ workout.durationMinutes }} мин</td>
+
+                <td>{{ workout.calories }} ккал</td>
+
+                <td>
+                  @if (workout.photoUrl) {
+                    <img
+                      class="workout-photo"
+                      [src]="'http://localhost:5245' + workout.photoUrl"
+                      alt="Фотография тренировки"
+                    />
+                  } @else {
+                    <label class="upload-btn">
+                      {{ uploadingId === workout.id ? 'Загрузка...' : 'Загрузить' }}
+                      <input
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp"
+                        [disabled]="uploadingId === workout.id"
+                        (change)="uploadPhoto($event, workout.id)"
+                        hidden
+                      />
+                    </label>
+                  }
+                </td>
+
+                <td>
+                  <div class="actions">
+                    <button
+                      class="edit-btn"
+                      (click)="editWorkout(workout)">
+                      Изменить
+                    </button>
+
+                    <button
+                      class="delete-btn"
+                      (click)="deleteWorkout(workout.id)">
+                      Удалить
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <button
+          class="secondary-btn"
+          (click)="previousPage()"
+          [disabled]="page <= 1">
+          Назад
+        </button>
+
+        <span>Страница {{ page }} из {{ totalPages }}</span>
+
+        <button
+          class="secondary-btn"
+          (click)="nextPage()"
+          [disabled]="page * pageSize >= total">
+          Далее
+        </button>
+      </div>
+    }
+  </section>
+</div>

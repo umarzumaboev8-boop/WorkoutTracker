@@ -1,0 +1,40 @@
+
+<div class="auth-container">
+  <div class="auth-card">
+    <h1>WorkoutTracker</h1>
+    <h2>{{ isRegister ? 'Регистрация' : 'Вход' }}</h2>
+
+    <form (ngSubmit)="submit()">
+      <input
+        type="text"
+        name="username"
+        [(ngModel)]="username"
+        placeholder="Имя пользователя"
+        required
+        minlength="3"
+      />
+
+      <input
+        type="password"
+        name="password"
+        [(ngModel)]="password"
+        placeholder="Пароль"
+        required
+        minlength="8"
+      />
+
+      <p class="error" *ngIf="error">{{ error }}</p>
+
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Подождите...' : (isRegister ? 'Создать аккаунт' : 'Войти') }}
+      </button>
+    </form>
+
+    <p>
+      {{ isRegister ? 'Уже есть аккаунт?' : 'Нет аккаунта?' }}
+      <a href="#" (click)="$event.preventDefault(); isRegister = !isRegister; error = ''">
+        {{ isRegister ? 'Войти' : 'Зарегистрироваться' }}
+      </a>
+    </p>
+  </div>
+</div>
